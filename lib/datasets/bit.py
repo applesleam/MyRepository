@@ -59,7 +59,7 @@ class bit(imdb):
         """
         for ext in self._image_ext:
             image_path = os.path.join(self._data_path, 'Images',
-                                  index + self._image_ext)
+                                  index + ext)
             if os,path.exists(image_path):
                 break
         assert os.path.exists(image_path), \
@@ -173,10 +173,9 @@ class bit(imdb):
 
         return self.create_roidb_from_box_list(box_list, gt_roidb)
 
-    def _load_pascal_annotation(self, index):
+    def _load_bit_annotation(self, index):
         """
-        Load image and bounding boxes info from XML file in the PASCAL VOC
-        format.
+        Load image info from txt files of BIT Interaction dataset.
         """
         filename = os.path.join(self._data_path, 'Annotations', index + '.xml')
         tree = ET.parse(filename)
