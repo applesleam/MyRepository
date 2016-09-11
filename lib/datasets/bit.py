@@ -22,17 +22,21 @@ from fast_rcnn.config import cfg
 
 class bit(imdb):
     def __init__(self, image_set, devkit_path):
-        # imageset is train test
+        
         imdb.__init__(self, image_set)
+        # imageset is train or test
         self._image_set = image_set
+        # suppose to be /home/sdy/Kaggle/git/MyRepository/BIT_split
         self._devkit_path = devkit_path
+        # suppose to be /home/sdy/Kaggle/git/MyRepository/BIT_split/data
         self._data_path = os.path.join(self._devkit_path, 'data')
         self._classes = ('bend', 'box', 'handshake', 'hifive',
                          'hug', 'kick', 'pat', 'push')
         # construct dictionary {'bend': 0, 'box': 1, ...}
         self._class_to_ind = dict(zip(self.classes, xrange(self.num_classes)))
+        
         self._image_ext = '.jpg'
-        # add file list
+        # add image list (ground truth)
         self._image_index = self._load_image_set_index()
         # Default to roidb handler
         self._roidb_handler = self.selective_search_roidb
@@ -51,17 +55,23 @@ class bit(imdb):
         """
         Return the absolute path to image i in the image sequence.
         """
+        # Example format to image i in train.txt:
+        #   image_index[i] = 00042_box_0004
+        # Example path to image i:
+        #   /home/sdy/Kaggle/git/MyRepository/BIT_split/data/Images
         return self.image_path_from_index(self._image_index[i])
 
     def image_path_from_index(self, index):
         """
         Construct an image path from the image's "index" identifier.
         """
-        for ext in self._image_ext:
-            image_path = os.path.join(self._data_path, 'Images',
-                                  index + ext)
-            if os,path.exists(image_path):
-                break
+        frame_num_len = 5 
+        # Example to video name: box_0004
+        video_name = index[frame_num_len+1:]
+        # Example to image_path: /data/Images/box_0004/00042_box_0004.jpg
+        image_path = os.path.join(self._data_path, 'Images', video_name, 
+                                  index + self._image_ext)
+
         assert os.path.exists(image_path), \
                 'Path does not exist: {}'.format(image_path)
         return image_path
@@ -72,6 +82,8 @@ class bit(imdb):
         """
         # Example path to image set file:
         # self._devkit_path + /VOCdevkit2007/VOC2007/ImageSets/Main/val.txt
+
+        # /home/sdy/Kaggle/git/MyRepository/BIT_split/ImageSets/train.txt
         image_set_file = os.path.join(self._data_path, 'ImageSets',
                                       self._image_set + '.txt')
         assert os.path.exists(image_set_file), \
@@ -175,48 +187,23 @@ class bit(imdb):
 
     def _load_bit_annotation(self, index):
         """
-        Load image info from txt files of BIT Interaction dataset.
+        Load image info(ground truth) from txt files of BIT Interaction dataset.
+        The file format is: /data/Annotations/ImageList.txt 00041_hifive_0042.jpg 3 8
+        where 3 should be the class index, followed by 8 is the period of this frame
+        img in video.
         """
-        filename = os.path.join(self._data_path, 'Annotations', index + '.xml')
-        tree = ET.parse(filename)
-        objs = tree.findall('object')
-        if not self.config['use_diff']:
-            # Exclude the samples labeled as difficult
-            non_diff_objs = [
-                obj for obj in objs if int(obj.find('difficult').text) == 0]
-            # if len(non_diff_objs) != len(objs):
-            #     print 'Removed {} difficult objects'.format(
-            #         len(objs) - len(non_diff_objs))
-            objs = non_diff_objs
-        num_objs = len(objs)
+        filename = os.path.join(self._data_path, 'Annotations', index + '.txt')
+        
+        with open(filename) as f:
+            # Example to line: ['00030_bend_0042.jpg', '0', '5']
+            split_line = f.readline().strip().split()      
 
-        boxes = np.zeros((num_objs, 4), dtype=np.uint16)
-        gt_classes = np.zeros((num_objs), dtype=np.int32)
-        overlaps = np.zeros((num_objs, self.num_classes), dtype=np.float32)
-        # "Seg" area for pascal is just the box area
-        seg_areas = np.zeros((num_objs), dtype=np.float32)
+        gt_class = int(split_line[1])
+        gt_location = int(split_line[2])
 
-        # Load object bounding boxes into a data frame.
-        for ix, obj in enumerate(objs):
-            bbox = obj.find('bndbox')
-            # Make pixel indexes 0-based
-            x1 = float(bbox.find('xmin').text) - 1
-            y1 = float(bbox.find('ymin').text) - 1
-            x2 = float(bbox.find('xmax').text) - 1
-            y2 = float(bbox.find('ymax').text) - 1
-            cls = self._class_to_ind[obj.find('name').text.lower().strip()]
-            boxes[ix, :] = [x1, y1, x2, y2]
-            gt_classes[ix] = cls
-            overlaps[ix, cls] = 1.0
-            seg_areas[ix] = (x2 - x1 + 1) * (y2 - y1 + 1)
-
-        overlaps = scipy.sparse.csr_matrix(overlaps)
-
-        return {'boxes' : boxes,
-                'gt_classes': gt_classes,
-                'gt_overlaps' : overlaps,
-                'flipped' : False,
-                'seg_areas' : seg_areas}
+        return {'gt_class' : gt_class,
+                'gt_location': gt_location,
+                'flipped' : False}
 
     def _get_comp_id(self):
         comp_id = (self._comp_id + '_' + self._salt if self.config['use_salt']
