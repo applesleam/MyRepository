@@ -34,11 +34,11 @@ class SolverWrapper(object):
             # fixed statistics to compute a priori
             assert cfg.TRAIN.BBOX_NORMALIZE_TARGETS_PRECOMPUTED
 
-        if cfg.TRAIN.BBOX_REG:
-            print 'Computing bounding-box regression targets...'
-            self.bbox_means, self.bbox_stds = \
-                    rdl_roidb.add_bbox_regression_targets(roidb)
-            print 'done'
+        # if cfg.TRAIN.BBOX_REG:
+        #     print 'Computing bounding-box regression targets...'
+        #     self.bbox_means, self.bbox_stds = \
+        #             rdl_roidb.add_bbox_regression_targets(roidb)
+        #     print 'done'
 
         self.solver = caffe.SGDSolver(solver_prototxt)
         if pretrained_model is not None:

@@ -8,8 +8,8 @@ layer {
   top: 'labels'
   top: 'location'
   python_param {
-    module: 'roi_data_layer.layer'
-    layer: 'RoIDataLayer'
+    module: 'loc_data_layer.layer'
+    layer: 'LocDataLayer'
     param_str: "'num_classes': 8"
   }
 }
@@ -274,7 +274,7 @@ layer {
   param { lr_mult: 1.0 }
   param { lr_mult: 2.0 }
   inner_product_param {
-    num_output: 8
+    num_output: 1
     weight_filler {
       type: "gaussian"
       std: 0.001
@@ -288,7 +288,7 @@ layer {
 layer {
   name: "loss_cls"
   type: "SoftmaxWithLoss"
-  bottom: "cls_score"
+  bottom: "cls_score_bit"
   bottom: "labels"
   propagate_down: 1
   propagate_down: 0
@@ -302,7 +302,7 @@ layer {
 layer {
   name: "loss_loc"
   type: "SmoothL1Loss"
-  bottom: "loc_pred"
+  bottom: "loc_pred_bit"
   bottom: "location"
   top: "loc_loss"
   loss_weight: 1
