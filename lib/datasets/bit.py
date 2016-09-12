@@ -140,9 +140,9 @@ class bit(imdb):
             ss_roidb = self._load_selective_search_roidb(gt_roidb)
             roidb = imdb.merge_roidbs(gt_roidb, ss_roidb)
         else:
-            roidb = self._load_selective_search_roidb(None)
+           roidb = self._load_selective_search_roidb(None)
         with open(cache_file, 'wb') as fid:
-            cPickle.dump(roidb, fid, cPickle.HIGHEST_PROTOCOL)
+             cPickle.dump(roidb, fid, cPickle.HIGHEST_PROTOCOL)
         print 'wrote ss roidb to {}'.format(cache_file)
 
         return roidb
@@ -320,6 +320,6 @@ class bit(imdb):
             self.config['cleanup'] = True
 
 if __name__ == '__main__':
-    d = datasets.bit('train', '')
+    d = datasets.bit('train', '/home/sdy/Kaggle/git/MyRepository/BIT_split/data/ImageSets')
     res = d.roidb
     from IPython import embed; embed()
