@@ -84,8 +84,7 @@ class LocDataLayer(caffe.Layer):
 
         # data blob: holds a batch of N images, each with 3 channels
         # The height and width (100 x 100) are dummy values
-        top[0].reshape(cfg.TRAIN.IMS_PER_BATCH, 3,
-            max(cfg.TRAIN.SCALES), cfg.TRAIN.MAX_SIZE)
+        top[0].reshape(1, 3, 224, 224)
 
         # location blob: holds the frame nunber of this video img
         # an integer number from [0, 1, ..., 9]
@@ -93,7 +92,7 @@ class LocDataLayer(caffe.Layer):
 
         # labels blob: R categorical labels in [0, ..., K] for K calsses
         # classes plus others
-        top[2].reshape(1, 8)
+        top[2].reshape(1)
 
         print 'LocDataLayer: name_to_top:', self._name_to_top_map
         assert len(top) == len(self._name_to_top_map)

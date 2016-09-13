@@ -362,24 +362,15 @@ layer {
   bottom: "conv5_3"
   top: "conv5_3"
 }
-layers {
+layer {
+  name: "pool5"
+  type: "Pooling"
   bottom: "conv5_3"
   top: "pool5"
-  name: "pool5"
-  type: POOLING
   pooling_param {
     pool: MAX
     kernel_size: 2
     stride: 2
-  }
-}
-layers {
-  bottom: "pool5"
-  top: "fc6"
-  name: "fc6"
-  type: INNER_PRODUCT
-  inner_product_param {
-    num_output: 4096
   }
 }
 layer {
@@ -443,10 +434,10 @@ layer {
   }
 }
 layer {
-  name: "cls_score"
+  name: "cls_score_bit"
   type: "InnerProduct"
   bottom: "fc7"
-  top: "cls_score"
+  top: "cls_score_bit"
   param {
     lr_mult: 1
   }
@@ -454,7 +445,7 @@ layer {
     lr_mult: 2
   }
   inner_product_param {
-    num_output: 21
+    num_output: 8
     weight_filler {
       type: "gaussian"
       std: 0.01
@@ -466,10 +457,10 @@ layer {
   }
 }
 layer {
-  name: "loc_pred"
+  name: "loc_pred_bit"
   type: "InnerProduct"
   bottom: "fc7"
-  top: "loc_pred"
+  top: "loc_pred_bit"
   param {
     lr_mult: 1
   }
@@ -477,7 +468,7 @@ layer {
     lr_mult: 2
   }
   inner_product_param {
-    num_output: 84
+    num_output: 1
     weight_filler {
       type: "gaussian"
       std: 0.001
@@ -491,16 +482,16 @@ layer {
 layer {
   name: "loss_cls"
   type: "SoftmaxWithLoss"
-  bottom: "cls_score"
+  bottom: "cls_score_bit"
   bottom: "labels"
   top: "loss_cls"
   loss_weight: 1
 }
 layer {
-  name: "loss_bbox"
+  name: "loss_loc"
   type: "SmoothL1Loss"
-  bottom: "loc_pred"
+  bottom: "loc_pred_bit"
   bottom: "location"
-  top: "loss_bbox"
+  top: "loss_loc"
   loss_weight: 1
 }

@@ -304,6 +304,6 @@ layer {
   type: "SmoothL1Loss"
   bottom: "loc_pred_bit"
   bottom: "location"
-  top: "loc_loss"
+  top: "loss_loc"
   loss_weight: 1
 }
