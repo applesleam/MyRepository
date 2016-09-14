@@ -22,6 +22,8 @@ class imdb(object):
         self._classes = []
         self._image_index = []
         self._obj_proposer = 'selective_search'
+        self._locdb = None
+        self._locdb_handler = self.default_locdb
         self._roidb = None
         self._roidb_handler = self.default_roidb
         # Use this dict for storing dataset specific config options
@@ -44,6 +46,14 @@ class imdb(object):
         return self._image_index
 
     @property
+    def locdb_handler(self):
+        return self._locdb_handler
+
+    @locdb_handler.setter
+    def locdb_handler(self, val):
+        self._locdb_handler = val
+
+    @property
     def roidb_handler(self):
         return self._roidb_handler
 
@@ -54,6 +64,14 @@ class imdb(object):
     def set_proposal_method(self, method):
         method = eval('self.' + method + '_roidb')
         self.roidb_handler = method
+
+    @property
+    def locdb(self):
+        if self._locdb is not None:
+            return self._locdb
+        self._locdb = self.locdb_handler()
+        return self._locdb
+    
 
     @property
     def roidb(self):
@@ -79,6 +97,9 @@ class imdb(object):
       return len(self.image_index)
 
     def image_path_at(self, i):
+        raise NotImplementedError
+    
+    def default_locdb():
         raise NotImplementedError
 
     def default_roidb(self):

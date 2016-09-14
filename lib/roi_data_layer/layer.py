@@ -40,14 +40,14 @@ class RoIDataLayer(caffe.Layer):
             self._perm = np.random.permutation(np.arange(len(self._roidb)))
         self._cur = 0
 
-    def _get_next_minibatch_inds(self):
-        """Return the roidb indices for the next minibatch."""
-        if self._cur + cfg.TRAIN.IMS_PER_BATCH >= len(self._roidb):
-            self._shuffle_roidb_inds()
+    # def _get_next_minibatch_inds(self):
+    #     """Return the roidb indices for the next minibatch."""
+    #     if self._cur + cfg.TRAIN.IMS_PER_BATCH >= len(self._roidb):
+    #         self._shuffle_roidb_inds()
 
-        db_inds = self._perm[self._cur:self._cur + cfg.TRAIN.IMS_PER_BATCH]
-        self._cur += cfg.TRAIN.IMS_PER_BATCH
-        return db_inds
+    #     db_inds = self._perm[self._cur:self._cur + cfg.TRAIN.IMS_PER_BATCH]
+    #     self._cur += cfg.TRAIN.IMS_PER_BATCH
+    #     return db_inds
 
     def _get_next_minibatch(self):
         """Return the blobs to be used for the next minibatch.
@@ -64,6 +64,7 @@ class RoIDataLayer(caffe.Layer):
 
     def set_roidb(self, roidb):
         """Set the roidb to be used by this layer during training."""
+        print('===================WQtest setup roidb====================')
         self._roidb = roidb
         self._shuffle_roidb_inds()
         if cfg.TRAIN.USE_PREFETCH:

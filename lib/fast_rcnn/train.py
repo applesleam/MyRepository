@@ -27,7 +27,8 @@ class SolverWrapper(object):
                  pretrained_model=None):
         """Initialize the SolverWrapper."""
         self.output_dir = output_dir
-
+        # cfg.TRAIN.HAS_RPN:True--->is True only when training rpn
+        # cfg.TRAIN.BBOX_REG:False--->is False only when training rpn
         if (cfg.TRAIN.HAS_RPN and cfg.TRAIN.BBOX_REG and
             cfg.TRAIN.BBOX_NORMALIZE_TARGETS):
             # RPN can only use precomputed normalization because there are no
@@ -37,13 +38,21 @@ class SolverWrapper(object):
         # if cfg.TRAIN.BBOX_REG:
         #     print 'Computing bounding-box regression targets...'
         #     self.bbox_means, self.bbox_stds = \
+        #             # add_bbox_regression_targets is mainly add some useful info. to roidb, 
+        #             # like bbox_target mean and std
         #             rdl_roidb.add_bbox_regression_targets(roidb)
         #     print 'done'
 
+        # new a sgdsolver instance, this process will call SGDSolver constructor in bottom
+        # create net--->init each layer--->till "Network initialization done"--->
+        # till "Solver scanffolding done."
         self.solver = caffe.SGDSolver(solver_prototxt)
+
         if pretrained_model is not None:
             print ('Loading pretrained model '
                    'weights from {:s}').format(pretrained_model)
+            # Loading pretrained network, needed for fine-tuning
+            # solver.net.copy_from will call Net<Dtype>::CopyTrainLayersFrom method in bottom
             self.solver.net.copy_from(pretrained_model)
 
         self.solver_param = caffe_pb2.SolverParameter()
@@ -51,6 +60,7 @@ class SolverWrapper(object):
             pb2.text_format.Merge(f.read(), self.solver_param)
 
         # self.solver.net.layers[0].set_roidb(roidb)
+        self.solver.net.layers[0].set_roidb()
 
     def snapshot(self):
         """Take a snapshot of the network after unnormalizing the learned
@@ -98,11 +108,13 @@ class SolverWrapper(object):
         while self.solver.iter < max_iters:
             # Make one SGD update
             timer.tic()
+            # step(1) iterate one time, call Solver::Step() method
             self.solver.step(1)
             timer.toc()
             if self.solver.iter % (10 * self.solver_param.display) == 0:
                 print 'speed: {:.3f}s / iter'.format(timer.average_time)
 
+            # iter is an attribute for Caffe.Solver, call Solver<Dtype>::iter
             if self.solver.iter % cfg.TRAIN.SNAPSHOT_ITERS == 0:
                 last_snapshot_iter = self.solver.iter
                 model_paths.append(self.snapshot())

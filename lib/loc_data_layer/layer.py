@@ -15,7 +15,7 @@ LocDataLayer implements a Caffe Python layer.
 
 import caffe
 from fast_rcnn.config import cfg
-from roi_data_layer.minibatch import get_minibatch
+from loc_data_layer.minibatch import get_minibatch
 import numpy as np
 import yaml
 from multiprocessing import Process, Queue
@@ -25,13 +25,15 @@ class LocDataLayer(caffe.Layer):
 
     def _shuffle_roidb_inds(self):
         """Randomly permute the training roidb."""
-        self._perm = np.random.permutation(np.arange(len(self._roidb)))
+        # self._perm = np.random.permutation(np.arange(len(self._roidb)))
+        self._perm = 0
+        print('TESTwq: slef._cur =0')
         self._cur = 0
 
     def _get_next_minibatch_inds(self):
         """Return the roidb indices for the next minibatch."""
-        if self._cur + cfg.TRAIN.IMS_PER_BATCH >= len(self._roidb):
-            self._shuffle_roidb_inds()
+        # if self._cur + cfg.TRAIN.IMS_PER_BATCH >= len(self._roidb):
+        #     self._shuffle_roidb_inds()
 
         db_inds = self._perm[self._cur:self._cur + cfg.TRAIN.IMS_PER_BATCH]
         self._cur += cfg.TRAIN.IMS_PER_BATCH
@@ -43,6 +45,7 @@ class LocDataLayer(caffe.Layer):
         If cfg.TRAIN.USE_PREFETCH is True, then blobs will be computed in a
         separate process and made available through self._blob_queue.
         """
+        print('test wangqing')
         if cfg.TRAIN.USE_PREFETCH:
             return self._blob_queue.get()
         else:
@@ -50,14 +53,32 @@ class LocDataLayer(caffe.Layer):
             minibatch_db = [self._roidb[i] for i in db_inds]
             return get_minibatch(minibatch_db, self._num_classes)
 
-    def set_roidb(self, roidb):
+    # def set_roidb(self, roidb):
+    #     """Set the roidb to be used by this layer during training."""
+    #     print('Set up roidb')
+    #     self._roidb = roidb
+    #     self._shuffle_roidb_inds()
+    #     if cfg.TRAIN.USE_PREFETCH:
+    #         self._blob_queue = Queue(10)
+    #         self._prefetch_process = BlobFetcher(self._blob_queue,
+    #                                              self._roidb,
+    #                                              self._num_classes)
+    #         self._prefetch_process.start()
+    #         # Terminate the child process when the parent exists
+    #         def cleanup():
+    #             print 'Terminating BlobFetcher'
+    #             self._prefetch_process.terminate()
+    #             self._prefetch_process.join()
+    #         import atexit
+    #         atexit.register(cleanup)
+    def set_roidb(self):
         """Set the roidb to be used by this layer during training."""
-        self._roidb = roidb
+        # self._roidb = roidb
         self._shuffle_roidb_inds()
         if cfg.TRAIN.USE_PREFETCH:
             self._blob_queue = Queue(10)
             self._prefetch_process = BlobFetcher(self._blob_queue,
-                                                 self._roidb,
+                                                 # self._roidb,
                                                  self._num_classes)
             self._prefetch_process.start()
             # Terminate the child process when the parent exists
@@ -66,7 +87,7 @@ class LocDataLayer(caffe.Layer):
                 self._prefetch_process.terminate()
                 self._prefetch_process.join()
             import atexit
-            atexit.register(cleanup)
+            atexit.register(cleanup)  
 
     def setup(self, bottom, top):
         """Setup the LocDataLayer."""
