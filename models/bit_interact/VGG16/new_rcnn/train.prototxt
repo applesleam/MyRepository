@@ -8,7 +8,7 @@ layer {
   python_param {
     module: 'loc_data_layer.layer'
     layer: 'LocDataLayer'
-    param_str: "'num_classes': 8"
+    param_str: "'num_classes': 9"
   }
 }
 layer {
@@ -445,7 +445,7 @@ layer {
     lr_mult: 2
   }
   inner_product_param {
-    num_output: 8
+    num_output: 9
     weight_filler {
       type: "gaussian"
       std: 0.01
@@ -468,7 +468,7 @@ layer {
     lr_mult: 2
   }
   inner_product_param {
-    num_output: 1
+    num_output: 9
     weight_filler {
       type: "gaussian"
       std: 0.001
