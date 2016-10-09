@@ -200,6 +200,7 @@ class bit(imdb):
 
         gt_class = int(split_line[1])
         gt_location = int(split_line[2])
+        print('_load_bit_annotation')
 
         return {'gt_class' : gt_class,
                 'gt_location': gt_location,

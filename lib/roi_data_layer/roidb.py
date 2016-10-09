@@ -57,7 +57,8 @@ def add_bbox_regression_targets(roidb):
         max_classes = roidb[im_i]['max_classes']
         roidb[im_i]['bbox_targets'] = \
                 _compute_targets(rois, max_overlaps, max_classes)
-
+    
+    # compute "means" and "stds" needed for normalization
     if cfg.TRAIN.BBOX_NORMALIZE_TARGETS_PRECOMPUTED:
         # Use fixed / precomputed "means" and "stds" instead of empirical values
         means = np.tile(
